@@ -1,0 +1,331 @@
+/* --- Cài đặt gốc và Font chữ --- */
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --paper-yellow: #fdf5d3;
+    --pen-brown: #d16b47;
+    --dark-brown: #5c2c19;
+    --page-edge: #f7a868;
+    --line-color: rgba(0, 0, 0, 0.08);
+    --background-grey: #e8ecef;
+}
+
+body {
+    font-family: 'Kalam', cursive, sans-serif;
+    background-color: var(--background-grey);
+    color: var(--dark-brown);
+    line-height: 1.8;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+/* --- Sửa Lỗi Quan Trọng --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- Thiết kế sổ tay --- */
+.container {
+    width: 100%;
+    max-width: 700px;
+    margin: 20px auto;
+    background-color: var(--paper-yellow);
+    padding: 20px 20px 20px 50px;
+    border-radius: 15px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.15);
+    position: relative;
+    border: 1px solid #e7d1a5;
+    border-right: 15px solid var(--page-edge);
+}
+
+/* --- Các chi tiết trang trí --- */
+.pen {
+    position: absolute;
+    top: -20px;
+    right: 20px;
+    width: 25px;
+    height: 180px;
+    background-color: var(--pen-brown);
+    border-radius: 10px 10px 5px 5px;
+    transform: rotate(15deg);
+    box-shadow: -2px 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+.pen::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 15px solid var(--dark-brown);
+}
+
+.spirals {
+    position: absolute;
+    top: 0;
+    left: 15px;
+    width: 20px;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at center, transparent 4px, var(--dark-brown) 5px, var(--dark-brown) 7px, transparent 8px);
+    background-size: 20px 40px;
+    background-position: center 20px;
+}
+
+.content-wrapper {
+    position: relative;
+    z-index: 5;
+}
+
+/* --- Nội dung bên trong sổ tay --- */
+h1, h2 {
+    text-align: center;
+    color: var(--dark-brown);
+    margin-bottom: 20px;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 1.8rem; }
+
+.menu {
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button, .menu button {
+    padding: 10px 20px;
+    background-color: var(--pen-brown);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-family: 'Kalam', cursive;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+button:hover, .menu button:hover {
+    background-color: var(--dark-brown);
+    transform: translateY(-2px);
+}
+
+.section {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+/* --- Hiệu ứng giấy có dòng kẻ cho Textarea --- */
+.textarea-container {
+    background-image: repeating-linear-gradient(
+        var(--paper-yellow),
+        var(--paper-yellow) 29px,
+        var(--line-color) 30px,
+        var(--line-color) 31px
+    );
+    border: 1px solid #e7d1a5;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+textarea {
+    width: 100%;
+    padding: 0 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    font-family: 'Kalam', cursive;
+    color: var(--dark-brown);
+    height: 210px;
+    resize: vertical;
+    background-color: transparent;
+    line-height: 30.5px;
+}
+
+textarea:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+#grammarResult, #status {
+    margin: 15px 0;
+    font-size: 1.1rem;
+}
+
+.error-text { color: #b00020; }
+.suggestion-text { color: #2e7d32; }
+
+/* --- Giao diện Lịch --- */
+.month-selector {
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+#currentMonth {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.day {
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #fdfaf0;
+    transition: background-color 0.3s;
+    border: 1px solid #e7d1a5;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.day.has-entry {
+    background-color: var(--pen-brown);
+    color: white;
+    font-weight: bold;
+}
+
+.day.disabled {
+    color: #bbb;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.day.has-entry:hover {
+    background-color: var(--dark-brown);
+}
+
+/* --- Giao diện Popup --- */
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 15px;
+}
+
+.popup-content {
+    background-color: var(--paper-yellow);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+    border: 2px solid var(--dark-brown);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#popupDiaryContent {
+    overflow-y: auto;
+}
+
+.delete-button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.close-button, .delete-button {
+    background-color: var(--pen-brown) !important;
+}
+
+.close-button:hover, .delete-button:hover {
+    background-color: var(--dark-brown) !important;
+}
+
+/* --- THAY ĐỔI QUAN TRỌNG TẠI ĐÂY --- */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2rem; /* Tăng cỡ chữ X một chút */
+    font-family: sans-serif;
+    border: none;
+    
+    /* Sử dụng Flexbox để căn giữa hoàn hảo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0; /* Bỏ padding mặc định của nút */
+    line-height: 1; /* Reset line-height */
+}
+
+
+/* --- Tối ưu cho Mobile --- */
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    .container { 
+        padding: 15px 10px 15px 35px; 
+        border-right-width: 10px; 
+        margin: 10px auto;
+    }
+    .pen { display: none; }
+    .spirals { left: 8px; }
+
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+
+    textarea {
+        height: 150px;
+        font-size: 1rem;
+        line-height: 30px;
+    }
+
+    .day { 
+        padding: 5px; 
+        font-size: 0.8rem;
+    }
+
+    .popup-content {
+        padding: 20px;
+        width: 100%;
+        max-height: 80vh;
+    }
+}
