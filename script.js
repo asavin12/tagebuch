@@ -51,8 +51,6 @@ function showDiaryEntry(entries) {
         entries.forEach(entry => {
             const entryIndex = diaryList.findIndex(item => item.timestamp === entry.timestamp);
             
-            // --- THAY ĐỔI QUAN TRỌNG TẠI ĐÂY ---
-            // Lấy thời gian từ 'entry.timestamp' và định dạng lại chỉ hiển thị Giờ:Phút:Giây
             const timeString = new Date(entry.timestamp).toLocaleTimeString('de-DE', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -159,8 +157,10 @@ const GITHUB_REPO = "tuvung";
 const GITHUB_PATH = "diary.json";
 const API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
 const SECRET_KEY = 'mysecretkey';
+
+// --- CÁC KEY ĐÃ MÃ HÓA ---
 const ENCODED_KEY = 'ChEDOiA1DCJaVioiOzkBURApOBIyLTQwRAsxHCgbClwbO0lDEQQoFg==';
-const GEMINI_API_KEY = 'AIzaSyCW648tyE1ZvZQcnj9pAkbB48d7f8pZRec';
+const ENCODED_GEMINI_KEY = 'LDAJBDALJiNdUUEZADZUOQQ/JQgLE1QJMg4BMFFMD1IfVQkpNwYR';
 
 // --- Biến toàn cục ---
 let diaryList = [];
@@ -173,24 +173,38 @@ let currentMonth = new Date();
  */
 function xorDecode(str, key) {
     return Array.from(str)
-        .map((char, i) => char.charCodeAt(0) ^ key.charCodeAt(i % key.length))
-        .map(code => String.fromCharCode(code))
+        .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(i % key.length)))
         .join('');
 }
 
 /**
- * Tải và giải mã API key từ hằng số đã mã hóa.
+ * Tải và giải mã API key GitHub từ hằng số đã mã hóa.
  */
 function loadApiKey() {
     try {
         const decodedBase64 = atob(ENCODED_KEY);
         return xorDecode(decodedBase64, SECRET_KEY);
     } catch (error) {
-        console.error('Lỗi giải mã API key:', error.message);
-        alert(`Fehler beim Dekodieren des API-Schlüssels: ${error.message}.`);
+        console.error('Lỗi giải mã API key GitHub:', error.message);
+        alert(`Fehler beim Dekodieren des GitHub API-Schlüssels: ${error.message}.`);
         return null;
     }
 }
+
+/**
+ * Tải và giải mã API key Gemini từ hằng số đã mã hóa.
+ */
+function loadGeminiApiKey() {
+    try {
+        const decodedBase64 = atob(ENCODED_GEMINI_KEY);
+        return xorDecode(decodedBase64, SECRET_KEY);
+    } catch (error) {
+        console.error('Lỗi giải mã API key Gemini:', error.message);
+        alert(`Fehler beim Dekodieren des Gemini API-Schlüssels: ${error.message}.`);
+        return null;
+    }
+}
+
 
 /**
  * Mã hóa chuỗi sang định dạng Base64 (UTF-8).
@@ -248,12 +262,9 @@ async function loadDiary() {
         if (response.ok) {
             const data = await response.json();
             const decodedContent = data.content ? decodeBase64(data.content) : '';
-
-            // Xử lý JSON một cách an toàn
             try {
                 diaryList = decodedContent ? JSON.parse(decodedContent) : [];
                 if (!Array.isArray(diaryList)) {
-                    console.warn("Dữ liệu không phải mảng, đang reset về mảng rỗng.");
                     diaryList = [];
                 }
             } catch (e) {
@@ -299,19 +310,17 @@ async function saveDiary() {
         let sha = null;
         let remoteDiaryList = [];
         
-        // Lấy phiên bản mới nhất của file trên GitHub
         const getResponse = await fetch(API_URL, { headers: { "Authorization": `Bearer ${githubToken}` } });
         if (getResponse.ok) {
             const data = await getResponse.json();
             sha = data.sha;
-            // Xử lý an toàn file JSON có thể bị lỗi
             try {
                 const decodedContent = data.content ? decodeBase64(data.content) : '[]';
                 remoteDiaryList = JSON.parse(decodedContent);
                 if (!Array.isArray(remoteDiaryList)) remoteDiaryList = [];
             } catch (e) {
                 console.error("File trên GitHub bị lỗi, không thể parse. Sẽ tạo mới.", e);
-                remoteDiaryList = []; // Nếu file lỗi, bắt đầu với mảng rỗng
+                remoteDiaryList = [];
             }
         } else if (getResponse.status !== 404) {
             throw new Error('Không thể lấy phiên bản file hiện tại từ GitHub.');
@@ -342,7 +351,7 @@ async function saveDiary() {
         status.textContent = "Tagebuch erfolgreich gespeichert!";
         document.getElementById("diaryEntry").value = "";
         document.getElementById("grammarResult").innerHTML = "";
-        diaryList = remoteDiaryList; // Cập nhật lại danh sách local
+        diaryList = remoteDiaryList;
     } catch (error) {
         console.error("Lỗi khi lưu nhật ký:", error);
         status.textContent = `Fehler beim Speichern des Tagebuchs: ${error.message || 'Unknown error'}`;
@@ -351,7 +360,6 @@ async function saveDiary() {
 
 /**
  * Xóa một mục nhật ký khỏi GitHub.
- * @param {number} index - Chỉ số của mục cần xóa trong mảng diaryList.
  */
 async function deleteDiary(index) {
     if (index < 0 || index >= diaryList.length) {
@@ -410,16 +418,26 @@ async function checkGrammar() {
     const diaryEntry = document.getElementById("diaryEntry").value;
     const grammarResult = document.getElementById("grammarResult");
     const status = document.getElementById("status");
+    
+    // --- THAY ĐỔI QUAN TRỌNG: Lấy key đã được giải mã ---
+    const geminiApiKey = loadGeminiApiKey();
 
     if (!diaryEntry) {
         status.textContent = "Bitte geben Sie einen Tagebucheintrag ein!";
         return;
     }
+    
+    if (!geminiApiKey) {
+        status.textContent = "Không thể tải API key của Gemini.";
+        console.error("Lỗi: API key của Gemini là null hoặc không hợp lệ sau khi giải mã.");
+        return;
+    }
 
     status.textContent = "Grammatik wird überprüft...";
+    grammarResult.innerHTML = "";
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -428,13 +446,7 @@ async function checkGrammar() {
                         text: `Kiểm tra ngữ pháp cho văn bản tiếng Đức sau: "${diaryEntry}". Hãy chỉ ra các lỗi ngữ pháp (nếu có), giải thích lỗi bằng tiếng Việt, đưa ra gợi ý câu viết đúng, và cung cấp 2-3 câu ví dụ đúng bằng tiếng Đức. Trả về định dạng JSON như sau:
                         {
                             "errors": [
-                                {
-                                    "error": "Mô tả lỗi bằng tiếng Việt",
-                                    "incorrect": "Câu sai",
-                                    "suggestion": "Câu đúng",
-                                    "explanation": "Giải thích lỗi bằng tiếng Việt",
-                                    "examples": ["Ví dụ 1 đúng", "Ví dụ 2 đúng"]
-                                }
+                                { "error": "Mô tả lỗi", "incorrect": "Câu sai", "suggestion": "Câu đúng", "explanation": "Giải thích", "examples": ["Ví dụ 1", "Ví dụ 2"] }
                             ],
                             "correctedText": "Văn bản đã sửa"
                         }`
@@ -443,32 +455,51 @@ async function checkGrammar() {
             })
         });
 
-        if (!response.ok) throw new Error(`HTTP-Fehler! Status: ${response.status}`);
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error("Lỗi HTTP từ Gemini API:", errorBody);
+            throw new Error(`Lỗi HTTP! Status: ${response.status}`);
+        }
 
         const data = await response.json();
-        const resultText = data.candidates[0].content.parts[0].text.replace(/```json\n|\n```/g, "");
-        const result = JSON.parse(resultText);
+        console.log("Phản hồi thô từ Gemini API:", data);
 
-        grammarResult.innerHTML = "";
-        if (result.errors.length === 0) {
-            grammarResult.innerHTML = "<p style='color: #2e7d32;'>Keine Grammatikfehler gefunden!</p>";
-        } else {
-            result.errors.forEach(err => {
-                grammarResult.innerHTML += `
-                    <div>
-                        <p><strong>Lỗi:</strong> ${err.error}</p>
-                        <p><span class="error-text">${err.incorrect}</span> → <span class="suggestion-text">${err.suggestion}</span></p>
-                        <p><strong>Giải thích:</strong> ${err.explanation}</p>
-                        <p><strong>Ví dụ đúng:</strong></p>
-                        <ul>${err.examples.map(example => `<li>${example}</li>`).join('')}</ul>
-                    </div>
-                `;
-            });
-            grammarResult.innerHTML += `<p><strong>Văn bản đã sửa:</strong> ${result.correctedText}</p>`;
+        if (!data.candidates || data.candidates.length === 0) {
+            grammarResult.innerHTML = "<p style='color:orange;'>API không trả về kết quả nào.</p>";
+            status.textContent = "Prüfung abgeschlossen.";
+            return;
         }
+
+        const resultText = data.candidates[0].content.parts[0].text;
+        console.log("Nội dung text từ Gemini:", resultText);
+
+        try {
+            const result = JSON.parse(resultText.replace(/```json\n|\n```/g, ""));
+            if (!result.errors || result.errors.length === 0) {
+                grammarResult.innerHTML = "<p style='color: #2e7d32;'>Keine Grammatikfehler gefunden!</p>";
+            } else {
+                result.errors.forEach(err => {
+                    grammarResult.innerHTML += `
+                        <div>
+                            <p><strong>Lỗi:</strong> ${err.error}</p>
+                            <p><span class="error-text">${err.incorrect}</span> → <span class="suggestion-text">${err.suggestion}</span></p>
+                            <p><strong>Giải thích:</strong> ${err.explanation}</p>
+                            <p><strong>Ví dụ đúng:</strong></p>
+                            <ul>${err.examples.map(example => `<li>${example}</li>`).join('')}</ul>
+                        </div><hr>`;
+                });
+                grammarResult.innerHTML += `<p><strong>Văn bản đã sửa:</strong> ${result.correctedText}</p>`;
+            }
+        } catch (jsonError) {
+            console.warn("Phản hồi không phải JSON hợp lệ. Hiển thị như văn bản thường.", jsonError);
+            grammarResult.innerHTML = `<p><strong>Gợi ý từ AI:</strong><br>${resultText.replace(/\n/g, '<br>')}</p>`;
+        }
+        
         status.textContent = "Grammatikprüfung abgeschlossen!";
+
     } catch (error) {
         console.error("Lỗi khi kiểm tra ngữ pháp:", error);
         status.textContent = `Fehler bei der Grammatikprüfung: ${error.message}`;
+        grammarResult.innerHTML = `<p style='color:red;'>Lỗi khi kết nối tới API. Vui lòng kiểm tra lại API Key và thử lại.</p>`;
     }
 }

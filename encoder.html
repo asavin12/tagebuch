@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Công Cụ Mã Hóa Key</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; font-size: 1rem; }
+        button { padding: 10px 15px; cursor: pointer; }
+        #result { background-color: #e8f0fe; border: 1px solid #1a73e8; }
+    </style>
+</head>
+<body>
+    <h2>Công Cụ Mã Hóa API Key</h2>
+    <p>Dán API Key mới của bạn vào ô dưới đây và nhấn nút "Mã hóa".</p>
+
+    <label for="apiKey">API Key Gốc (Dán key mới của bạn vào đây):</label>
+    <input type="text" id="apiKey" placeholder="AIz....">
+
+    <label for="secretKey">Khóa Bí Mật (Giữ nguyên):</label>
+    <input type="text" id="secretKey" value="mysecretkey" readonly>
+
+    <button onclick="encodeKey()">Mã hóa</button>
+
+    <label for="result">Kết Quả (Sao chép chuỗi này):</label>
+    <textarea id="result" rows="4" readonly></textarea>
+
+    <script>
+        function xorEncode(str, key) {
+            return Array.from(str)
+                .map((char, i) => String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(i % key.length)))
+                .join('');
+        }
+
+        function encodeKey() {
+            const apiKey = document.getElementById('apiKey').value;
+            const secretKey = document.getElementById('secretKey').value;
+            const resultTextarea = document.getElementById('result');
+
+            if (!apiKey) {
+                resultTextarea.value = "Vui lòng nhập API Key.";
+                return;
+            }
+
+            const xorResult = xorEncode(apiKey, secretKey);
+            const encodedString = btoa(xorResult);
+
+            resultTextarea.value = encodedString;
+        }
+    </script>
+</body>
+</html>
