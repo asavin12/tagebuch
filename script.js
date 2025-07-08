@@ -160,7 +160,7 @@ const SECRET_KEY = 'mysecretkey';
 
 // --- CÁC KEY ĐÃ MÃ HÓA ---
 const ENCODED_KEY = 'ChEDOiA1DCJaVioiOzkBURApOBIyLTQwRAsxHCgbClwbO0lDEQQoFg==';
-const ENCODED_GEMINI_KEY = 'LDAJBDALJA5bIBgVK0AhCRAiBDxTKz0UGlNQITcrLSQ1WEgZIgcn';
+const ENCODED_GEMINI_KEY = 'LDAJBDALJxhTLhc+PwtdFDofDgc9TRs1HCQFOAsjERAJHCMiNQQ/';
 
 // --- Biến toàn cục ---
 let diaryList = [];
