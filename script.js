@@ -151,7 +151,7 @@ const GITHUB_PATH = "diary.json";
 const API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
 const SECRET_KEY = 'mysecretkey';
 const ENCODED_KEY = 'ChEDOiA1DCJaVioiOzkBURApOBIyLTQwRAsxHCgbClwbO0lDEQQoFg==';
-const ENCODED_GEMINI_KEY = 'QxADNwA9DCJaVio5OQNHEDopEhMyLTcBQgwBGgUfDBwPPUlDEQQoFg4DBBspMwMyLw==';
+const ENCODED_GEMINI_KEY = 'LDAJBDALJCAoNz1VPiUqJAAcA1wSGisjAhwORzRGLyZMPBA2NhI3';
 
 // NÂNG CẤP: Tách câu lệnh prompt ra thành hằng số cho dễ quản lý
 const GEMINI_PROMPT_TEMPLATE = (text) => `Kiểm tra ngữ pháp cho văn bản tiếng Đức sau: "${text}". Hãy chỉ ra các lỗi ngữ pháp (nếu có), giải thích lỗi bằng tiếng Việt, đưa ra gợi ý câu viết đúng, và cung cấp 2-3 câu ví dụ đúng bằng tiếng Đức. Trả về ĐÚNG MỘT KHỐI MÃ JSON duy nhất, không có giải thích hay định dạng thừa. Ví dụ định dạng:
